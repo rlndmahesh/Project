@@ -26,11 +26,11 @@ io.on("connection", (socket) => {
 
     socket.on("score", (data) => {
 
-        const i = leaderboard.findIndex(p => p.username === data.username);
+        const index = leaderboard.findIndex(p => p.username === data.username);
 
-        if (i !== -1) {
-            if (data.score > leaderboard[i].score) {
-                leaderboard[i].score = data.score;
+        if (index !== -1) {
+            if (data.score > leaderboard[index].score) {
+                leaderboard[index].score = data.score;
             }
         } else {
             leaderboard.push(data);
