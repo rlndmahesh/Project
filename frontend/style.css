@@ -1,21 +1,64 @@
 body {
     margin: 0;
+    padding: 0;
     background: black;
     color: white;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     overflow: hidden;
+    text-align: center;
 }
 
-/* GAME CANVAS AREA */
+/* GAME CANVAS WRAPPER */
 #gameContainer {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin-top: 20px;
 }
 
+/* CANVAS */
 canvas {
     border: 2px solid white;
     background: #111;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+}
+
+/* LOGIN SCREEN */
+#loginScreen {
+    position: absolute;
+    width: 100%;
+    top: 25%;
+    left: 0;
+    z-index: 10;
+}
+
+#loginScreen h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+#loginScreen input {
+    padding: 12px;
+    font-size: 18px;
+    width: 80%;
+    max-width: 300px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    margin-top: 10px;
+}
+
+#loginScreen button {
+    padding: 12px 20px;
+    font-size: 16px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #00c853;
+    color: white;
 }
 
 /* SCORE UI */
@@ -26,39 +69,29 @@ canvas {
     font-size: 18px;
 }
 
-/* LOGIN SCREEN */
-#loginScreen {
-    position: absolute;
-    width: 100%;
-    top: 35%;
-    text-align: center;
-}
-
-#loginScreen input {
-    padding: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-#loginScreen button {
-    padding: 10px 20px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
 /* LEADERBOARD */
 #leaderboard {
     position: absolute;
     right: 10px;
     top: 10px;
-    background: #222;
+    background: rgba(34, 34, 34, 0.9);
     padding: 10px;
-    border-radius: 8px;
-    min-width: 150px;
+    border-radius: 10px;
+    min-width: 160px;
+    font-size: 14px;
 }
 
-/* MOBILE FIX */
+/* MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
+
+    body {
+        overflow: hidden;
+    }
+
+    #loginScreen {
+        top: 20%;
+    }
+
     canvas {
         width: 100%;
         height: auto;
@@ -67,5 +100,12 @@ canvas {
     #leaderboard {
         position: static;
         margin-top: 10px;
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #ui {
+        font-size: 16px;
     }
 }
