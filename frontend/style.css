@@ -11,7 +11,6 @@ body {
 #gameContainer {
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 canvas {
@@ -27,7 +26,12 @@ canvas {
     top: 25%;
 }
 
-#loginScreen input, button {
+#username {
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
     padding: 10px;
     margin-top: 10px;
 }

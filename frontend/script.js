@@ -4,10 +4,10 @@ const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 document.getElementById("gameContainer").appendChild(canvas);
 
-// RESPONSIVE CANVAS FIX
 canvas.width = window.innerWidth;
 canvas.height = 300;
 
+// SOUNDS
 const jumpSound = new Audio("https://www.myinstants.com/media/sounds/jump.mp3");
 const hitSound = new Audio("https://www.myinstants.com/media/sounds/roblox-death-sound_1.mp3");
 
@@ -31,16 +31,27 @@ const player = {
 let obstacles = [];
 let birds = [];
 
-// START GAME
+/* ================= START GAME ================= */
 function startGame() {
     username = document.getElementById("username").value;
-    if (!username) return alert("Enter username");
+
+    if (!username) {
+        document.getElementById("username").focus();
+        return;
+    }
 
     document.getElementById("loginScreen").style.display = "none";
     gameStarted = true;
 }
 
-// AI DIFFICULTY
+/* ================= MOBILE KEYBOARD FIX ================= */
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        document.getElementById("username").focus();
+    }, 300);
+});
+
+/* ================= AI DIFFICULTY ================= */
 function aiDifficulty() {
     if (score > 2000) speed = 8;
     if (score > 5000) speed = 10;
@@ -51,7 +62,7 @@ function aiDifficulty() {
     }
 }
 
-// OBSTACLES
+/* ================= OBSTACLES ================= */
 function spawnObstacle() {
     if (!gameStarted || gameOver) return;
 
@@ -68,7 +79,7 @@ function spawnObstacle() {
     }
 }
 
-// BIRDS (after 5k)
+/* ================= BIRDS ================= */
 function spawnBird() {
     if (score < 5000 || !gameStarted) return;
 
@@ -80,14 +91,15 @@ function spawnBird() {
     });
 }
 
-// FIXED LOOP (dynamic spawn)
+/* dynamic spawn */
 function obstacleLoop() {
     spawnObstacle();
     setTimeout(obstacleLoop, spawnRate);
 }
 
-// INPUT
+/* ================= INPUT ================= */
 document.addEventListener("keydown", (e) => {
+
     if (!gameStarted || gameOver) return;
 
     if (e.code === "Space" && player.jumps < 2) {
@@ -99,8 +111,8 @@ document.addEventListener("keydown", (e) => {
     if (gameOver && e.code === "Enter") location.reload();
 });
 
-// MOBILE TOUCH
-document.addEventListener("touchstart", () => {
+/* ================= TOUCH FIX (ONLY CANVAS) ================= */
+canvas.addEventListener("touchstart", () => {
 
     if (!gameStarted) {
         startGame();
@@ -119,7 +131,7 @@ document.addEventListener("touchstart", () => {
     }
 });
 
-// UPDATE
+/* ================= UPDATE ================= */
 function update() {
 
     if (!gameStarted || gameOver) return;
@@ -152,7 +164,7 @@ function update() {
     document.getElementById("score").innerText = "Score: " + score;
 }
 
-// COLLISION
+/* ================= COLLISION ================= */
 function collision(a, b) {
     return (
         a.x < b.x + b.w &&
@@ -162,7 +174,7 @@ function collision(a, b) {
     );
 }
 
-// GAME OVER
+/* ================= GAME OVER ================= */
 function endGame() {
     gameOver = true;
     hitSound.play();
@@ -173,8 +185,9 @@ function endGame() {
     });
 }
 
-// DRAW
+/* ================= DRAW ================= */
 function draw() {
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "#222";
@@ -196,8 +209,9 @@ function draw() {
     }
 }
 
-// LEADERBOARD
+/* ================= LEADERBOARD ================= */
 socket.on("leaderboard", (data) => {
+
     let html = "<h3>Leaderboard</h3>";
 
     data.forEach((d, i) => {
@@ -207,7 +221,7 @@ socket.on("leaderboard", (data) => {
     document.getElementById("leaderboard").innerHTML = html;
 });
 
-// LOOP
+/* ================= LOOP ================= */
 function loop() {
     update();
     draw();
