@@ -3,10 +3,10 @@ body {
     background: black;
     color: white;
     font-family: Arial;
-    text-align: center;
     overflow: hidden;
 }
 
+/* GAME CANVAS AREA */
 #gameContainer {
     display: flex;
     justify-content: center;
@@ -18,30 +18,54 @@ canvas {
     background: #111;
 }
 
+/* SCORE UI */
 #ui {
     position: absolute;
     top: 10px;
     left: 10px;
+    font-size: 18px;
 }
 
-#startScreen {
+/* LOGIN SCREEN */
+#loginScreen {
     position: absolute;
     width: 100%;
-    top: 40%;
+    top: 35%;
     text-align: center;
 }
 
-.title {
-    font-size: 40px;
-    font-weight: bold;
-}
-
-.subtitle {
-    font-size: 20px;
+#loginScreen input {
+    padding: 10px;
+    font-size: 16px;
     margin-top: 10px;
 }
 
-.hint {
-    margin-top: 20px;
-    opacity: 0.7;
+#loginScreen button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* LEADERBOARD */
+#leaderboard {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #222;
+    padding: 10px;
+    border-radius: 8px;
+    min-width: 150px;
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #leaderboard {
+        position: static;
+        margin-top: 10px;
+    }
 }

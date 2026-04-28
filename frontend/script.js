@@ -1,147 +1,186 @@
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
-
 document.getElementById("gameContainer").appendChild(canvas);
 
 canvas.width = 800;
 canvas.height = 300;
 
-// UI elements (safe)
-const startScreen = document.getElementById("startScreen");
-const scoreEl = document.getElementById("score");
-
+let username = "";
 let gameStarted = false;
 let gameOver = false;
 let score = 0;
 
-// PLAYER
 const player = {
     x: 60,
     y: 200,
-    width: 30,
-    height: 50,
+    width: 35,
+    height: 35,
     velocityY: 0,
-    jumping: false
+    jumps: 0
 };
 
-const gravity = 1;
-const groundY = 200;
+let gravity = 1;
+let groundY = 200;
+
+let obstacles = [];
+let speed = 6;
+let spawnRate = 1500;
+
+// START GAME
+function startGame() {
+    username = document.getElementById("username").value;
+
+    if (!username) return alert("Enter username");
+
+    document.getElementById("loginScreen").style.display = "none";
+
+    gameStarted = true;
+}
 
 // OBSTACLES
-let obstacles = [];
-
 function spawnObstacle() {
     if (!gameStarted || gameOver) return;
 
     obstacles.push({
         x: canvas.width,
         y: 220,
-        width: 20,
-        height: 30
+        w: 20,
+        h: 30
     });
 }
 
-setInterval(spawnObstacle, 1500);
+setInterval(spawnObstacle, spawnRate);
 
-// INPUT
+// INPUT (PC)
 document.addEventListener("keydown", (e) => {
 
+    if (!gameStarted || gameOver) return;
+
     if (e.code === "Space") {
-
-        // START GAME
-        if (!gameStarted) {
-            gameStarted = true;
-            if (startScreen) startScreen.style.display = "none";
-        }
-
-        // JUMP
-        if (!player.jumping && gameStarted && !gameOver) {
+        if (player.jumps < 2) {
             player.velocityY = -15;
-            player.jumping = true;
+            player.jumps++;
         }
     }
 
-    // RESTART
-    if (e.code === "Enter" && gameOver) {
+    if (gameOver && e.code === "Enter") {
         location.reload();
     }
 });
 
-// UPDATE UI
-function updateUI() {
-    if (scoreEl) {
-        scoreEl.innerText = "Score: " + score;
-    }
-}
+// TOUCH (MOBILE)
+document.addEventListener("touchstart", () => {
 
-// UPDATE GAME
+    if (!gameStarted) {
+        startGame();
+        return;
+    }
+
+    if (gameOver) {
+        location.reload();
+        return;
+    }
+
+    if (player.jumps < 2) {
+        player.velocityY = -15;
+        player.jumps++;
+    }
+});
+
+// UPDATE
 function update() {
+
     if (!gameStarted || gameOver) return;
 
-    // PLAYER PHYSICS
     player.y += player.velocityY;
     player.velocityY += gravity;
 
     if (player.y >= groundY) {
         player.y = groundY;
-        player.jumping = false;
+        player.jumps = 0;
     }
 
-    // OBSTACLES MOVE
-    obstacles.forEach(o => {
-        o.x -= 6;
+    // SPEED INCREASE (difficulty scaling)
+    if (score % 500 === 0) {
+        speed += 0.5;
+    }
 
-        // COLLISION
+    obstacles.forEach(o => {
+        o.x -= speed;
+
         if (
-            player.x < o.x + o.width &&
+            player.x < o.x + o.w &&
             player.x + player.width > o.x &&
-            player.y < o.y + o.height &&
+            player.y < o.y + o.h &&
             player.y + player.height > o.y
         ) {
             gameOver = true;
+            sendScore();
+            loadLeaderboard();
         }
     });
 
-    // CLEAN OLD OBSTACLES
     obstacles = obstacles.filter(o => o.x > -50);
 
     score++;
-    updateUI();
-}
+    document.getElementById("score").innerText = "Score: " + score;
 
-// DRAW GAME
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // GROUND
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, 250, canvas.width, 50);
-
-    // PLAYER
-    ctx.fillStyle = "#d4aa00";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    // OBSTACLES
-    ctx.fillStyle = "#888";
-    obstacles.forEach(o => {
-        ctx.beginPath();
-        ctx.moveTo(o.x, o.y + 30);
-        ctx.lineTo(o.x + 10, o.y);
-        ctx.lineTo(o.x + 20, o.y + 30);
-        ctx.fill();
-    });
-
-    // GAME OVER SCREEN
-    if (gameOver) {
-        ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-        ctx.fillText("GAME OVER", 280, 140);
-        ctx.font = "16px Arial";
-        ctx.fillText("Press ENTER to restart", 270, 170);
+    if (score >= 10000) {
+        alert("Thank you for playing by SK MAMA 🎉");
     }
 }
 
-// GAME LOOP
+// SEND SCORE
+function sendScore() {
+    fetch("/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, score })
+    });
+}
+
+// LOAD LEADERBOARD
+function loadLeaderboard() {
+    fetch("/leaderboard")
+        .then(res => res.json())
+        .then(data => {
+
+            let html = "<h3>Leaderboard</h3>";
+
+            data.forEach((d, i) => {
+                html += `<p>${i+1}. ${d.username} - ${d.score}</p>`;
+            });
+
+            document.getElementById("leaderboard").innerHTML = html;
+        });
+}
+
+// DRAW
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ground
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 250, canvas.width, 50);
+
+    // TIGER CHARACTER 🐯
+    ctx.font = "30px Arial";
+    ctx.fillText("🐯", player.x, player.y + 25);
+
+    // obstacles
+    ctx.fillStyle = "red";
+    obstacles.forEach(o => {
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+    });
+
+    if (gameOver) {
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("GAME OVER", 250, 140);
+    }
+}
+
+// LOOP
 function loop() {
     update();
     draw();

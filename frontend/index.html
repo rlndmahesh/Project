@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK Mama Dungeon Run</title>
-
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- START SCREEN -->
-<div id="startScreen">
-    <div class="title">SK MAMA</div>
-    <div class="subtitle">DUNGEON RUN</div>
-    <div class="hint">Press SPACE to Start</div>
+<!-- USERNAME SCREEN -->
+<div id="loginScreen">
+    <h1>SK MAMA RUN</h1>
+    <input id="username" placeholder="Enter Username">
+    <button onclick="startGame()">Start Game</button>
 </div>
 
-<!-- SCORE UI -->
+<!-- GAME UI -->
 <div id="ui">
     <div id="score">Score: 0</div>
 </div>
 
-<!-- GAME CANVAS -->
 <div id="gameContainer"></div>
+
+<!-- LEADERBOARD -->
+<div id="leaderboard"></div>
 
 <script src="script.js"></script>
 
