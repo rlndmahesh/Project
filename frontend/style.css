@@ -3,109 +3,45 @@ body {
     padding: 0;
     background: black;
     color: white;
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     overflow: hidden;
     text-align: center;
 }
 
-/* GAME CANVAS WRAPPER */
 #gameContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
 }
 
-/* CANVAS */
 canvas {
-    border: 2px solid white;
     background: #111;
-    width: 100%;
-    max-width: 800px;
-    height: auto;
+    border: 2px solid white;
+    display: block;
+    margin: auto;
 }
 
-/* LOGIN SCREEN */
 #loginScreen {
     position: absolute;
     width: 100%;
     top: 25%;
-    left: 0;
-    z-index: 10;
 }
 
-#loginScreen h1 {
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-#loginScreen input {
-    padding: 12px;
-    font-size: 18px;
-    width: 80%;
-    max-width: 300px;
-    border-radius: 10px;
-    border: none;
-    outline: none;
+#loginScreen input, button {
+    padding: 10px;
     margin-top: 10px;
 }
 
-#loginScreen button {
-    padding: 12px 20px;
-    font-size: 16px;
-    margin-top: 10px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: #00c853;
-    color: white;
-}
-
-/* SCORE UI */
 #ui {
     position: absolute;
     top: 10px;
     left: 10px;
-    font-size: 18px;
 }
 
-/* LEADERBOARD */
 #leaderboard {
-    position: absolute;
+    position: fixed;
     right: 10px;
     top: 10px;
-    background: rgba(34, 34, 34, 0.9);
+    background: rgba(0,0,0,0.7);
     padding: 10px;
-    border-radius: 10px;
-    min-width: 160px;
-    font-size: 14px;
-}
-
-/* MOBILE OPTIMIZATION */
-@media (max-width: 768px) {
-
-    body {
-        overflow: hidden;
-    }
-
-    #loginScreen {
-        top: 20%;
-    }
-
-    canvas {
-        width: 100%;
-        height: auto;
-    }
-
-    #leaderboard {
-        position: static;
-        margin-top: 10px;
-        width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    #ui {
-        font-size: 16px;
-    }
 }

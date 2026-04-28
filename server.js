@@ -6,7 +6,14 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+// FIXED SOCKET.IO FOR RENDER
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -14,13 +21,22 @@ app.use(express.static(path.join(__dirname, "frontend")));
 
 let leaderboard = [];
 
-// REAL-TIME MULTIPLAYER LEADERBOARD
 io.on("connection", (socket) => {
 
     socket.emit("leaderboard", leaderboard);
 
     socket.on("score", (data) => {
-        leaderboard.push(data);
+
+        const index = leaderboard.findIndex(p => p.username === data.username);
+
+        if (index !== -1) {
+            if (data.score > leaderboard[index].score) {
+                leaderboard[index].score = data.score;
+            }
+        } else {
+            leaderboard.push(data);
+        }
+
         leaderboard.sort((a, b) => b.score - a.score);
         leaderboard = leaderboard.slice(0, 10);
 

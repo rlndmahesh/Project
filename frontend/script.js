@@ -4,10 +4,10 @@ const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 document.getElementById("gameContainer").appendChild(canvas);
 
-canvas.width = 800;
+// RESPONSIVE CANVAS FIX
+canvas.width = window.innerWidth;
 canvas.height = 300;
 
-// AUDIO
 const jumpSound = new Audio("https://www.myinstants.com/media/sounds/jump.mp3");
 const hitSound = new Audio("https://www.myinstants.com/media/sounds/roblox-death-sound_1.mp3");
 
@@ -31,7 +31,7 @@ const player = {
 let obstacles = [];
 let birds = [];
 
-// LOGIN
+// START GAME
 function startGame() {
     username = document.getElementById("username").value;
     if (!username) return alert("Enter username");
@@ -40,40 +40,35 @@ function startGame() {
     gameStarted = true;
 }
 
-// DIFFICULTY AI SYSTEM
+// AI DIFFICULTY
 function aiDifficulty() {
     if (score > 2000) speed = 8;
     if (score > 5000) speed = 10;
     if (score > 8000) speed = 12;
 
     if (score % 1000 === 0 && spawnRate > 700) {
-        spawnRate -= 50;
+        spawnRate -= 10;
     }
 }
 
-// OBSTACLES (group + single + double jump required)
+// OBSTACLES
 function spawnObstacle() {
     if (!gameStarted || gameOver) return;
 
     let type = Math.random();
 
     if (type < 0.4) {
-        // single
         obstacles.push({ x: canvas.width, y: 220, w: 20, h: 30 });
-    } 
-    else if (type < 0.8) {
-        // group
+    } else if (type < 0.8) {
         for (let i = 0; i < 3; i++) {
             obstacles.push({ x: canvas.width + i * 25, y: 220, w: 20, h: 30 });
         }
-    } 
-    else {
-        // high obstacle (double jump needed)
+    } else {
         obstacles.push({ x: canvas.width, y: 180, w: 25, h: 70 });
     }
 }
 
-// FLYING BIRDS after 5k
+// BIRDS (after 5k)
 function spawnBird() {
     if (score < 5000 || !gameStarted) return;
 
@@ -85,8 +80,11 @@ function spawnBird() {
     });
 }
 
-setInterval(spawnObstacle, spawnRate);
-setInterval(spawnBird, 2000);
+// FIXED LOOP (dynamic spawn)
+function obstacleLoop() {
+    spawnObstacle();
+    setTimeout(obstacleLoop, spawnRate);
+}
 
 // INPUT
 document.addEventListener("keydown", (e) => {
@@ -121,7 +119,7 @@ document.addEventListener("touchstart", () => {
     }
 });
 
-// UPDATE GAME
+// UPDATE
 function update() {
 
     if (!gameStarted || gameOver) return;
@@ -136,22 +134,14 @@ function update() {
         player.jumps = 0;
     }
 
-    // obstacles
     obstacles.forEach(o => {
         o.x -= speed;
-
-        if (collision(player, o)) {
-            endGame();
-        }
+        if (collision(player, o)) endGame();
     });
 
-    // birds
     birds.forEach(b => {
         b.x -= speed + 2;
-
-        if (collision(player, b)) {
-            endGame();
-        }
+        if (collision(player, b)) endGame();
     });
 
     obstacles = obstacles.filter(o => o.x > -100);
@@ -159,9 +149,7 @@ function update() {
 
     score++;
 
-    if (score >= 10000) {
-        alert("Thank you for playing by SK MAMA 🎉");
-    }
+    document.getElementById("score").innerText = "Score: " + score;
 }
 
 // COLLISION
@@ -192,28 +180,23 @@ function draw() {
     ctx.fillStyle = "#222";
     ctx.fillRect(0, 250, canvas.width, 50);
 
-    // player (tiger)
     ctx.font = "30px Arial";
     ctx.fillText("🐯", player.x, player.y + 25);
 
-    // obstacles
     ctx.fillStyle = "red";
     obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
 
-    // birds
     ctx.fillStyle = "white";
-    birds.forEach(b => {
-        ctx.fillText("🐦", b.x, b.y);
-    });
+    birds.forEach(b => ctx.fillText("🐦", b.x, b.y));
 
     if (gameOver) {
         ctx.fillStyle = "white";
         ctx.font = "30px Arial";
-        ctx.fillText("GAME OVER", 250, 140);
+        ctx.fillText("GAME OVER", 200, 140);
     }
 }
 
-// LEADERBOARD (REAL TIME)
+// LEADERBOARD
 socket.on("leaderboard", (data) => {
     let html = "<h3>Leaderboard</h3>";
 
@@ -232,3 +215,4 @@ function loop() {
 }
 
 loop();
+obstacleLoop();
