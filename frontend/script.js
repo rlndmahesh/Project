@@ -7,9 +7,9 @@ document.getElementById("gameContainer").appendChild(canvas);
 canvas.width = window.innerWidth;
 canvas.height = 300;
 
-// SOUNDS
-const jumpSound = new Audio("https://www.myinstants.com/media/sounds/jump.mp3");
-const hitSound = new Audio("https://www.myinstants.com/media/sounds/roblox-death-sound_1.mp3");
+/* PLAYER IMAGE (your WhatsApp sticker converted) */
+const playerImg = new Image();
+playerImg.src = "assets/tiger.png";
 
 let username = "";
 let gameStarted = false;
@@ -22,8 +22,8 @@ let spawnRate = 1400;
 const player = {
     x: 60,
     y: 200,
-    w: 35,
-    h: 35,
+    w: 40,
+    h: 40,
     vy: 0,
     jumps: 0
 };
@@ -31,7 +31,7 @@ const player = {
 let obstacles = [];
 let birds = [];
 
-/* ================= START GAME ================= */
+/* START GAME */
 function startGame() {
     username = document.getElementById("username").value;
 
@@ -44,60 +44,39 @@ function startGame() {
     gameStarted = true;
 }
 
-/* ================= MOBILE KEYBOARD FIX ================= */
+/* MOBILE FIX */
 window.addEventListener("load", () => {
     setTimeout(() => {
         document.getElementById("username").focus();
     }, 300);
 });
 
-/* ================= AI DIFFICULTY ================= */
+/* AI DIFFICULTY */
 function aiDifficulty() {
     if (score > 2000) speed = 8;
     if (score > 5000) speed = 10;
     if (score > 8000) speed = 12;
-
-    if (score % 1000 === 0 && spawnRate > 700) {
-        spawnRate -= 10;
-    }
 }
 
-/* ================= OBSTACLES ================= */
+/* OBSTACLES */
 function spawnObstacle() {
     if (!gameStarted || gameOver) return;
 
-    let type = Math.random();
-
-    if (type < 0.4) {
-        obstacles.push({ x: canvas.width, y: 220, w: 20, h: 30 });
-    } else if (type < 0.8) {
-        for (let i = 0; i < 3; i++) {
-            obstacles.push({ x: canvas.width + i * 25, y: 220, w: 20, h: 30 });
-        }
-    } else {
-        obstacles.push({ x: canvas.width, y: 180, w: 25, h: 70 });
-    }
-}
-
-/* ================= BIRDS ================= */
-function spawnBird() {
-    if (score < 5000 || !gameStarted) return;
-
-    birds.push({
+    obstacles.push({
         x: canvas.width,
-        y: 120 + Math.random() * 80,
-        w: 30,
-        h: 20
+        y: 220,
+        w: 20,
+        h: 30
     });
 }
 
-/* dynamic spawn */
-function obstacleLoop() {
+/* LOOP SPAWN */
+function loopSpawn() {
     spawnObstacle();
-    setTimeout(obstacleLoop, spawnRate);
+    setTimeout(loopSpawn, spawnRate);
 }
 
-/* ================= INPUT ================= */
+/* INPUT */
 document.addEventListener("keydown", (e) => {
 
     if (!gameStarted || gameOver) return;
@@ -105,13 +84,12 @@ document.addEventListener("keydown", (e) => {
     if (e.code === "Space" && player.jumps < 2) {
         player.vy = -15;
         player.jumps++;
-        jumpSound.play();
     }
 
     if (gameOver && e.code === "Enter") location.reload();
 });
 
-/* ================= TOUCH FIX (ONLY CANVAS) ================= */
+/* TOUCH */
 canvas.addEventListener("touchstart", () => {
 
     if (!gameStarted) {
@@ -127,11 +105,10 @@ canvas.addEventListener("touchstart", () => {
     if (player.jumps < 2) {
         player.vy = -15;
         player.jumps++;
-        jumpSound.play();
     }
 });
 
-/* ================= UPDATE ================= */
+/* UPDATE */
 function update() {
 
     if (!gameStarted || gameOver) return;
@@ -148,44 +125,25 @@ function update() {
 
     obstacles.forEach(o => {
         o.x -= speed;
-        if (collision(player, o)) endGame();
-    });
 
-    birds.forEach(b => {
-        b.x -= speed + 2;
-        if (collision(player, b)) endGame();
+        if (
+            player.x < o.x + o.w &&
+            player.x + player.w > o.x &&
+            player.y < o.y + o.h &&
+            player.y + player.h > o.y
+        ) {
+            gameOver = true;
+            socket.emit("score", { username, score });
+        }
     });
 
     obstacles = obstacles.filter(o => o.x > -100);
-    birds = birds.filter(b => b.x > -100);
 
     score++;
-
     document.getElementById("score").innerText = "Score: " + score;
 }
 
-/* ================= COLLISION ================= */
-function collision(a, b) {
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-    );
-}
-
-/* ================= GAME OVER ================= */
-function endGame() {
-    gameOver = true;
-    hitSound.play();
-
-    socket.emit("score", {
-        username,
-        score
-    });
-}
-
-/* ================= DRAW ================= */
+/* DRAW */
 function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -193,14 +151,15 @@ function draw() {
     ctx.fillStyle = "#222";
     ctx.fillRect(0, 250, canvas.width, 50);
 
-    ctx.font = "30px Arial";
-    ctx.fillText("🐯", player.x, player.y + 25);
+    /* PLAYER IMAGE */
+    if (playerImg.complete) {
+        ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+    } else {
+        ctx.fillText("🐯", player.x, player.y);
+    }
 
     ctx.fillStyle = "red";
     obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
-
-    ctx.fillStyle = "white";
-    birds.forEach(b => ctx.fillText("🐦", b.x, b.y));
 
     if (gameOver) {
         ctx.fillStyle = "white";
@@ -209,7 +168,7 @@ function draw() {
     }
 }
 
-/* ================= LEADERBOARD ================= */
+/* LEADERBOARD */
 socket.on("leaderboard", (data) => {
 
     let html = "<h3>Leaderboard</h3>";
@@ -221,7 +180,7 @@ socket.on("leaderboard", (data) => {
     document.getElementById("leaderboard").innerHTML = html;
 });
 
-/* ================= LOOP ================= */
+/* LOOP */
 function loop() {
     update();
     draw();
@@ -229,4 +188,4 @@ function loop() {
 }
 
 loop();
-obstacleLoop();
+loopSpawn();
