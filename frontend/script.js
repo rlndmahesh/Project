@@ -1,27 +1,33 @@
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
-document.body.appendChild(canvas);
+
+document.getElementById("gameContainer").appendChild(canvas);
 
 canvas.width = 800;
 canvas.height = 300;
 
-let gameStarted = false;
-let score = 0;
-let gameOver = false;
+// UI elements (safe)
+const startScreen = document.getElementById("startScreen");
+const scoreEl = document.getElementById("score");
 
+let gameStarted = false;
+let gameOver = false;
+let score = 0;
+
+// PLAYER
 const player = {
     x: 60,
     y: 200,
     width: 30,
     height: 50,
     velocityY: 0,
-    jumping: false,
-    tilt: 0
+    jumping: false
 };
 
 const gravity = 1;
 const groundY = 200;
 
+// OBSTACLES
 let obstacles = [];
 
 function spawnObstacle() {
@@ -37,47 +43,55 @@ function spawnObstacle() {
 
 setInterval(spawnObstacle, 1500);
 
-// 🎮 start control
+// INPUT
 document.addEventListener("keydown", (e) => {
 
-    // start game
-    if (!gameStarted && e.code === "Space") {
-        gameStarted = true;
-        document.getElementById("startScreen").style.display = "none";
+    if (e.code === "Space") {
+
+        // START GAME
+        if (!gameStarted) {
+            gameStarted = true;
+            if (startScreen) startScreen.style.display = "none";
+        }
+
+        // JUMP
+        if (!player.jumping && gameStarted && !gameOver) {
+            player.velocityY = -15;
+            player.jumping = true;
+        }
     }
 
-    if (e.code === "Space" && gameStarted && !player.jumping) {
-        player.velocityY = -15;
-        player.jumping = true;
-        player.tilt = -20;
-    }
-
-    if (gameOver && e.code === "Enter") {
+    // RESTART
+    if (e.code === "Enter" && gameOver) {
         location.reload();
     }
 });
 
+// UPDATE UI
 function updateUI() {
-    document.getElementById("score").innerText = "Score: " + score;
+    if (scoreEl) {
+        scoreEl.innerText = "Score: " + score;
+    }
 }
 
+// UPDATE GAME
 function update() {
     if (!gameStarted || gameOver) return;
 
+    // PLAYER PHYSICS
     player.y += player.velocityY;
     player.velocityY += gravity;
 
     if (player.y >= groundY) {
         player.y = groundY;
         player.jumping = false;
-        player.tilt *= 0.9;
     }
 
-    player.tilt *= 0.95;
-
+    // OBSTACLES MOVE
     obstacles.forEach(o => {
         o.x -= 6;
 
+        // COLLISION
         if (
             player.x < o.x + o.width &&
             player.x + player.width > o.x &&
@@ -88,24 +102,26 @@ function update() {
         }
     });
 
+    // CLEAN OLD OBSTACLES
     obstacles = obstacles.filter(o => o.x > -50);
 
     score++;
     updateUI();
 }
 
+// DRAW GAME
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // ground
+    // GROUND
     ctx.fillStyle = "#222";
     ctx.fillRect(0, 250, canvas.width, 50);
 
-    // player (beer)
+    // PLAYER
     ctx.fillStyle = "#d4aa00";
-    ctx.fillRect(player.x, player.y, 30, 50);
+    ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // spikes
+    // OBSTACLES
     ctx.fillStyle = "#888";
     obstacles.forEach(o => {
         ctx.beginPath();
@@ -115,6 +131,7 @@ function draw() {
         ctx.fill();
     });
 
+    // GAME OVER SCREEN
     if (gameOver) {
         ctx.fillStyle = "white";
         ctx.font = "30px Arial";
@@ -124,6 +141,7 @@ function draw() {
     }
 }
 
+// GAME LOOP
 function loop() {
     update();
     draw();
